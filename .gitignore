@@ -1,207 +1,492 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[codz]
-*$py.class
+import csv
+#Assigns the save data values for the save function
+global SaveData1, SaveData2, SaveData3
+SaveData1 = [False, False, False, False, False]
+SaveData2 = [False, False, False, False, False]
+SaveData3 = [False, False, False, False, False]
 
-# C extensions
-*.so
+#Accesses whichever row number is put into it, and provides access to specific coordinates
+def RowGrab(row_number):
+    with open("EditedData.csv", 'r') as csvfile:
+        Read = csv.reader(csvfile)
+        next(Read)  
+        for idx, row in enumerate(Read):
+            if idx == row_number - 1:
+                return row
+    return None 
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+#The main function, is called at the beginning of the code and provides the primary interface
+def main():
+    while True:
+        print("Welcome to the House of Commons Database!")
+        print("\n1) Find my MP")
+        print("2) Demographics")
+        print("3) Search")
+        print("4) Vote Data")
+        print("5) Save Data")
 
-# PyInstaller
-#  Usually these files are written by a python script from a template
-#  before PyInstaller builds the exe, so as to inject date/other infos into it.
-*.manifest
-*.spec
+        Answer = input("\nType a number to choose a function:")
+        if Answer == "1":
+            MPIdentifier()
+        elif Answer == "2":
+            Demographics()
+        elif Answer == "3":
+            Search()
+        elif Answer == "4":
+            Votes()
+        elif Answer == "5":
+            SaveFunction()
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
+#Allows for saving MP's data from the search function
+class MP:
+    def __init__(self, FName, Surname, Gender, Constituency, FParty, SParty):
+        self.FName = FName
+        self.Surname = Surname
+        self.Gender = Gender
+        self.Constituency = Constituency
+        self.FParty = FParty
+        self.SParty = SParty
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py.cover
-.hypothesis/
-.pytest_cache/
-cover/
+#When function is called, provides access to find the user's MP by narrowing down their region and consistuency
+def MPIdentifier():
+    Continue = True
+    while Continue == True:
+        FailSafe = True
+        print("________________________________________________________")
+        print("\nWhich region do you live in?\n")
+        with open("EditedData.csv", "r") as file:
+            reader = csv.DictReader(file)
+            count = 1
+            RegionList = []
+            for row in reader: #Retrieves all region names from the database and prints them off
+                Attempt = RowGrab(count)
+                RegionFinder = Attempt[1]
+                if RegionFinder not in RegionList:
+                    RegionList.append(RegionFinder)
+                count += 1
+            count = 1
+            for i in RegionList:
+                print(count,") ",RegionList[count - 1])
+                count += 1
+            Answer = input("\nEnter a number to designate your region\n") #User inputs their region
+            try:
+                count = 1
+                ConstituencyList = []
+                Converter = int(Answer)
+                TrueAnswer = Converter - 1
+                with open("EditedData.csv", "r") as file: #Retrieves all constituencies from within the provided region and prints them off
+                     reader = csv.DictReader(file)
+                     for row in reader:
+                        Attempt = RowGrab(count)
+                        CountryChecker = Attempt[1]
+                        count += 1
+                        if CountryChecker in RegionList[TrueAnswer]:
+                            ConstituencyList.append(Attempt[0])
+                Counter = 1
+                for i in ConstituencyList:
+                    print(Counter,") ",ConstituencyList[Counter - 1])
+                    Counter += 1
+                Answer2 = input("\nEnter a number to designate your constituency\n") #User inputs their constituency
+                try:
+                    with open("EditedData.csv", "r") as file:
+                        reader = csv.DictReader(file)
+                        count = 1
+                        Converter = int(Answer2)
+                        TrueAnswer = Converter - 1
+                        for row in reader:
+                            Attempt = RowGrab(count)
+                            NameFinder = Attempt[0]
+                            count += 1
+                            if NameFinder in ConstituencyList[TrueAnswer]: #Accesses data from the constituency name and prints off all the MP's data
+                                print("Your MP is:")
+                                print("\nName: ",Attempt[4], Attempt[5])
+                                print("Gender: ",Attempt[6])
+                                print("First Party: ",Attempt[8])
+                                print("Second Party: ",Attempt[9],"\n")
+                except:
+                    print("That was not a valid number\n") #General error catching
+                    FailSafe = False
+            except:
+                print("That was not a valid number\n")
+                FailSafe = False
+                
+            while FailSafe == True: #Checks if the code worked properly and if it did, provides the user with the option to either return to the main menu or search again
+                ContinueAnswer = input("\nType 'Y' to see another MP or 'N' to return to the main menu:")
+            
+                if ContinueAnswer == "N":
+                    Continue = False
+                    print("\nReturning to main menu...\n")
+                    import time
+                    time.sleep(1.5)
+                    print("________________________________________________________\n")
+                    break
+                
+                elif ContinueAnswer == "Y":
+                    break
+            
+                else:
+                    print("\nThat was not a valid answer")
 
-# Translations
-*.mo
-*.pot
 
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
 
-# Flask stuff:
-instance/
-.webassets-cache
 
-# Scrapy stuff:
-.scrapy
+#When function is called, provides access to the demographics of the data
+def Demographics():
+    Continue = True
+    while Continue == True:
+        print("________________________________________________________")
+        print("\nWhich demographic would you like to see?")
+        print("\n1) Gender")
+        print("2) First Party")
+        print("3) Second Party")
+        print("4) Country")
+        print("5) Region")
 
-# Sphinx documentation
-docs/_build/
+        Answer = input("\nType a number to choose a function:")
+        
+        if Answer == "1":
+            with open("EditedData.csv", "r") as file: #Accesses the database to find all data under the MP's genders and assigns a dictionary to each gender
+                GenderDict = {"Male": 0, "Female": 0}
+                reader = csv.DictReader(file)
+                count = 1
+                rowCounter = 0
+                for row in reader:
+                    rowCounter += 1
+                    Attempt = RowGrab(count)
+                    GenderChecker = Attempt[6]
+                    if "Male" in GenderChecker: #Checks the entire gender column for Male and Female and adds a value to the dictionary for each one it finds
+                        GenderDict["Male"] += 1
+                    elif "Female" in GenderChecker:
+                        GenderDict["Female"] += 1
+                    count += 1
+                print("\nMale:", GenderDict["Male"])
+                print("Female:", GenderDict["Female"])
+                Calculation = GenderDict["Male"] / rowCounter * 100
+                Calculation2 = GenderDict["Female"] / rowCounter * 100
+                print("The percentage of Men in the House of Commons is equal to:",Calculation,"%")
+                print("The percentage of Women in the House of Commons is equal to:",Calculation2,"%\n")
 
-# PyBuilder
-.pybuilder/
-target/
+        elif Answer == "2":
+            with open("EditedData.csv", "r") as file: #Accesses all data in the First Party column and assigns a dictionary entry for each one
+                FPartyDict = {"APNI": 0, "Con": 0, "DUP": 0, "Green": 0, "Ind": 0, "Lab": 0, "LD": 0, "PC": 0, "RUK": 0, "SDLP": 0, "SF": 0, "SNP": 0, "Spk": 0, "TUV": 0, "UUP": 0}
+                reader = csv.DictReader(file)
+                count = 1
+                rowCounter = 0
+                for row in reader: #Checks the first party column for each instance in the dictionary and adds a value to each one
+                    rowCounter += 1
+                    Attempt = RowGrab(count)
+                    PartyChecker = Attempt[8]
+                    FPartyDict[PartyChecker] += 1
+                    count += 1
+                print("")
+                for Party, Value in FPartyDict.items():
+                    print(f'{Party} - {Value} vote(s)')
 
-# Jupyter Notebook
-.ipynb_checkpoints
+        elif Answer == "3":
+            with open("EditedData.csv", "r") as file: #Does the same as first party in this section, assigning dictionary and accessing data
+                SPartyDict = {"APNI": 0, "Con": 0, "DUP": 0, "Green": 0, "Ind": 0, "INet": 0,  "Lab": 0, "LD": 0, "NIP": 0, "PBPA": 0, "PC": 0, "RUK": 0, "SDLP": 0, "SF": 0, "SNP": 0, "UUP": 0, "WPB": 0}
+                reader = csv.DictReader(file)
+                count = 1
+                rowCounter = 0
+                for row in reader: #Checks the second party column for each instance in the dictionary and adds a value to each one
+                    rowCounter += 1
+                    Attempt = RowGrab(count)
+                    PartyChecker = Attempt[9]
+                    SPartyDict[PartyChecker] += 1
+                    count += 1
+                print("")
+                for Party, Value in SPartyDict.items():
+                    print(f'{Party} - {Value} vote(s)')
 
-# IPython
-profile_default/
-ipython_config.py
+        elif Answer == "4":
+            with open("EditedData.csv", "r") as file: #Creates a dictionary for each country and accesses the database's country column
+                CountryDict = {"England": 0, "Scotland": 0, "Northern Ireland": 0, "Wales": 0}
+                reader = csv.DictReader(file)
+                count = 1
+                rowCounter = 0
+                for row in reader: #Adds the amount of MPs in each country to the dictionary and prints them off
+                    rowCounter += 1
+                    Attempt = RowGrab(count)
+                    CountryChecker = Attempt[2]
+                    CountryDict[CountryChecker] += 1
+                    count += 1
+                print("")
+                for Country, Value in CountryDict.items():
+                    print(f'{Country} - {Value} MPs')
 
-# pyenv
-#   For a library or package, you might want to ignore these files since the code is
-#   intended to run in multiple environments; otherwise, check them in:
-# .python-version
+        elif Answer == "5":
+            with open("EditedData.csv", "r") as file: #Creates a dictionary for each region and accesses the database's region column
+                RegionDict = {"East Midlands": 0, "East of England": 0, "London": 0, "North East": 0, "North West": 0, "Northern Ireland": 0, "Scotland": 0, "South East": 0, "South West": 0, "Wales": 0, "West Midlands": 0, "Yorkshire and The Humber": 0}
+                reader = csv.DictReader(file)
+                count = 1
+                rowCounter = 0
+                for row in reader: #Adds the amount of MPs in each region to the dictionary and prints them off
+                    rowCounter += 1
+                    Attempt = RowGrab(count)
+                    RegionChecker = Attempt[1]
+        
+                    RegionDict[RegionChecker] += 1
+                    count += 1
+                print("")
+                for Region, Value in RegionDict.items():
+                    print(f'{Region} - {Value} MPs')
 
-# pipenv
-#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.
-#   However, in case of collaboration, if having platform-specific dependencies or dependencies
-#   having no cross-platform support, pipenv may install dependencies that don't work, or not
-#   install all needed dependencies.
-#Pipfile.lock
+        else:
+            print("\nThat was not a valid number")
 
-# UV
-#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#uv.lock
+    
+        while True:
+            ContinueAnswer = input("\nType 'Y' to see another demographic or 'N' to return to the main menu:") #Checks if the user would like to see another demographic or return to the main menu and acts accordingly
+            
+            if ContinueAnswer == "N":
+                Continue = False
+                WaitMessage = print("\nReturning to main menu...\n")
+                import time
+                time.sleep(1.5)
+                print("________________________________________________________\n")
+                break
+                Counter = 1
+                for i in ConstituencyList:
+                    print(Counter,") ",ConstituencyList[Counter - 1])
+                    Counter += 1
+            elif ContinueAnswer == "Y":
+                break
+            
+            else:
+                print("\nThat was not a valid answer")
 
-# poetry
-#   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
-#   This is especially recommended for binary packages to ensure reproducibility, and is more
-#   commonly ignored for libraries.
-#   https://python-poetry.org/docs/basic-usage/#commit-your-poetrylock-file-to-version-control
-#poetry.lock
-#poetry.toml
 
-# pdm
-#   Similar to Pipfile.lock, it is generally recommended to include pdm.lock in version control.
-#   pdm recommends including project-wide configuration in pdm.toml, but excluding .pdm-python.
-#   https://pdm-project.org/en/latest/usage/project/#working-with-version-control
-#pdm.lock
-#pdm.toml
-.pdm-python
-.pdm-build/
 
-# pixi
-#   Similar to Pipfile.lock, it is generally recommended to include pixi.lock in version control.
-#pixi.lock
-#   Pixi creates a virtual environment in the .pixi directory, just like venv module creates one
-#   in the .venv directory. It is recommended not to include this directory in version control.
-.pixi
 
-# PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
-__pypackages__/
+#When called this function allows the user to search for specific data
+def Search():
+    Continue = True
+    while Continue == True:
+        print("________________________________________________________")
+        print("\nWhat would you like to search for? \n\n1) MP \n2) Constituency \n3) Region")
+        Answer = input("\nType a number to choose a function:")
 
-# Celery stuff
-celerybeat-schedule
-celerybeat.pid
+        if Answer == "1":
+            FName = input("\nEnter the MP's first name:") #Allows the user to search for specific MPs by first name, and provides all MPs with that first name
+            with open("EditedData.csv", "r") as file:
+                print("")
+                count = 1
+                NameList = []
+                RowNumber = []
+                reader = csv.DictReader(file)
+                for row in reader:
+                    Attempt = RowGrab(count)
+                    NameFinder = Attempt[4]
+                    SNameFinder = Attempt[5]
+                    if FName in NameFinder:
+                        NameList.append(SNameFinder)
+                        RowNumber.append(count)
+                    count += 1
+                Counter = 1
+                if len(NameList) == 0: #Error catching for if no name was found in the database
+                    print("That was not a valid name\n")
+                else:
+                    for i in NameList:
+                        print(Counter,") ",FName,NameList[Counter - 1]) #Prints off all the MPs with the same first name as provided
+                        Counter += 1
+                    Answer2 = input("\nType a number to choose a function:") #Takes the name which the user wants to know more information on and prints off their information
+                    try:
+                        Converter = int(Answer2)
+                        Converter -= 1
+                        Attempt = RowGrab(RowNumber[Converter])
+                        print("\nFirst Name:",Attempt[4],"\nSecond Name:",Attempt[5],"\nGender: ",Attempt[6],"\nConstituency:",Attempt[0],"\nConstituency Type:",Attempt[3],"\nFirst Party:",Attempt[8],"\nSecond Party:",Attempt[9],"\n")
+                        Answer2 = input("Would you like to save this data? Type 'Y' for Yes or 'N' for No:")
+                        if Answer2 == "Y": #Allows the user to save the MPs data if they ever want to go back to it
+                            if SaveData1[0] == False:
+                                global Save1
+                                Save1 = MP(Attempt[4],Attempt[5],Attempt[6],Attempt[0],Attempt[8],Attempt[9])
+                                SaveData1[0] = True
+                            
+                            elif SaveData1[0] == True and SaveData1[1] == False:
+                                global Save2
+                                Save2 = MP(Attempt[4],Attempt[5],Attempt[6],Attempt[0],Attempt[8],Attempt[9])
+                                SaveData1[1] = True
 
-# SageMath parsed files
-*.sage.py
+                            elif SaveData1[0] == True and SaveData1[1] == True and SaveData1[2] == False:
+                                global Save3
+                                Save3 = MP(Attempt[4],Attempt[5],Attempt[6],Attempt[0],Attempt[8],Attempt[9])
+                                SaveData1[2] = True
 
-# Environments
-.env
-.envrc
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+                            elif SaveData1[0] == True and SaveData1[1] == True and SaveData1[2] == True and SaveData1[3] == False:
+                                global Save4
+                                Save4 = MP(Attempt[4],Attempt[5],Attempt[6],Attempt[0],Attempt[8],Attempt[9])
+                                SaveData1[3] = True
 
-# Spyder project settings
-.spyderproject
-.spyproject
+                            elif SaveData1[0] == True and SaveData[1] == True and SaveData[2] == True and SaveData1[3] == True and SaveData1[4] == False:
+                                global Save5
+                                Save5 = MP(Attempt[4],Attempt[5],Attempt[6],Attempt[0],Attempt[8],Attempt[9])
+                                SaveData1[4] = True
+                            
+                    except:
+                        print("That was not a valid number\n")
 
-# Rope project settings
-.ropeproject
 
-# mkdocs documentation
-/site
+        if Answer == "2":
+            Constituency = input("\nEnter a Constituency:")
+            with open("EditedData.csv", "r") as file: #Allows the user to input a specific constituency name and provides data for that constituency if found
+                count = 1
+                Found = False
+                reader = csv.DictReader(file)
+                for row in reader:
+                    Attempt = RowGrab(count)
+                    ConstituencyFinder = Attempt[0]
+                    if Constituency in ConstituencyFinder:
+                        Found = True
+                        print("\nConstituency:",Attempt[0],"\nRegion Name:",Attempt[1],"\nCountry Name:",Attempt[2],"\nMP Name:",Attempt[4],Attempt[5],"\n")
+                    count += 1
+               
+                
+                        
+                if Found == False:
+                    print("\nThat was not a valid Constituency\n")
 
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
+        if Answer == "3":
+            Region = input("\nEnter a Region:")
+            with open("EditedData.csv", "r") as file: #Allows the user to input a specific region name and provides data for that region if found
+                count = 1
+                Found = False
+                reader = csv.DictReader(file)
+                RegionList = []
+                for row in reader:
+                    Attempt = RowGrab(count)
+                    RegionFinder = Attempt[1]
+                    if Region in RegionFinder:
+                        Found = True
+                        RegionList.append(Attempt[0])
+                    count += 1
+                if Found == True:
+                    count = 1
+                    print("")
+                    print(Region,"contains the following Constituencies\n")
+                    for i in RegionList:
+                        print(count,") ",RegionList[count - 1])
+                        count += 1
+                    print("")
+                else:
+                    print("\nThat was not a valid Region\n")
 
-# Pyre type checker
-.pyre/
+        while True:
+            ContinueAnswer = input("\nType 'Y' to search again or 'N' to return to the main menu:") #Gives the user the option of either searching for data again or returning to the main menu
+            
+            if ContinueAnswer == "N":
+                Continue = False
+                WaitMessage = print("\nReturning to main menu...\n")
+                import time
+                time.sleep(1.5)
+                print("________________________________________________________\n")
+                break
+            elif ContinueAnswer == "Y":
+                    break
+            
+            else:
+                print("\nThat was not a valid answer")
 
-# pytype static type analyzer
-.pytype/
+#When this function is called the user is provided with the option to look at saved data
+def SaveFunction():
+    Continue = True
+    while Continue == True:
+        Continue2 = True
+        print("________________________________________________________")
+        print("\nWhich save data would you like to access?")
+        print("\n1) Save 1\n2) Save 2\n3) Save 3\n4) Save 4\n5) Save 5")
+        Answer2 = input("\nType a number to choose a function:")
+        try:
+            Converter = int(Answer2)
+            Calculation = Converter - 1
+            if SaveData1[Calculation] == True: #Determines which file the user wants to look at and prints off all the data in said file
+                if Answer2 == "1":
+                    print("\nFirst Name :",Save1.FName,"\nSurname :",Save1.Surname,"\nGender :",Save1.Gender,"\nFirst Party :",Save1.FParty,"\nSecond Party :",Save1.SParty)
+                elif Answer2 == "2":
+                    print("\nFirst Name :",Save2.FName,"\nSurname :",Save2.Surname,"\nGender :",Save2.Gender,"\nFirst Party :",Save2.FParty,"\nSecond Party :",Save2.SParty)
+                elif Answer2 == "3":
+                    print("\nFirst Name :",Save3.FName,"\nSurname :",Save3.Surname,"\nGender :",Save3.Gender,"\nFirst Party :",Save3.FParty,"\nSecond Party :",Save3.SParty)
+                elif Answer2 == "4":
+                    print("\nFirst Name :",Save4.FName,"\nSurname :",Save4.Surname,"\nGender :",Save4.Gender,"\nFirst Party :",Save4.FParty,"\nSecond Party :",Save4.SParty)
+                elif Answer2 == "5":
+                    print("\nFirst Name :",Save5.FName,"\nSurname :",Save5.Surname,"\nGender :",Save5.Gender,"\nFirst Party :",Save5.FParty,"\nSecond Party :",Save5.SParty)
+                else:
+                    print("\nThat was not a valid number")
+            else:
+                Answer = input("\nThere is no data saved in that file, type 'Exit' to return to the main menu or type anything to continue:")
+                if Answer == "Exit":
+                    Continue = False
+                    Continue2 = False
+                    print("________________________________________________________\n")
+                    break
+        except:
+            print("\nThat was not a valid number")
+    while Continue2 == True:
+        Answer = input("Type 'Y' to review Save Data again or 'N' to return to the main menu:") #Allows the user to search for save data again or return to the main menu
+        if Answer == "Y":
+            break
+        elif Answer == "N":
+            Continue = False
+            WaitMessage = print("\nReturning to main menu...\n")
+            import time
+            time.sleep(1.5)
+            print("________________________________________________________\n")
+            break
+        else:
+            print("\nThat was not a valid answer")
 
-# Cython debug symbols
-cython_debug/
+def Votes():
+    Continue = True
+    while Continue == True:
+        Found = False
+        print("________________________________________________________")
+        print("\nWhich constituency would you like to search for?\n") #Allows the user to search for a specific constituency and find voting data related to it
+        Answer = input("Enter the constituency's name here:")
+        with open("EditedData.csv", "r") as file:
+            reader = csv.DictReader(file)
+            count = 1
+            ColumnNumber = []
+            Counter = 0
+            for row in reader:
+                Attempt = RowGrab(count)
+                ConstituencyFinder = Attempt[0]
+                if Answer in ConstituencyFinder:
+                    print("\nAmount of votes in this Constituency:",Attempt[11]) #Provides the user with the related voting data and percentages
+                    print("Amount of people who could vote:",Attempt[10])
+                    Conversion = int(Attempt[11])
+                    Conversion2 = int(Attempt[10])
+                    Calc = Conversion / Conversion2
+                    Calculation = Calc * 100
+                    print("Percentage of people who voted in this Constituency:",Calculation,"%\n")
+                    count += 1
+                    Found = True
+            if Found == False:
+                print("\nThat was not a valid Constituency\n")
+            
 
-# PyCharm
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#.idea/
+        while True:
+            Answer = input("Type 'Y' to review Vote Data again or 'N' to return to the main menu:") #Allows the user to search for other constituencies voting data or return to the main menu
+            if Answer == "Y":
+                break
+            elif Answer == "N":
+                Continue = False
+                WaitMessage = print("\nReturning to main menu...\n")
+                import time
+                time.sleep(1.5)
+                print("________________________________________________________\n")
+                break
+            else:
+                print("\nThat was not a valid answer")
+                    
+                
+                
+    
+    
 
-# Abstra
-# Abstra is an AI-powered process automation framework.
-# Ignore directories containing user credentials, local state, and settings.
-# Learn more at https://abstra.io/docs
-.abstra/
 
-# Visual Studio Code
-#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
-#  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
-#  and can be added to the global gitignore or merged into this file. However, if you prefer, 
-#  you could uncomment the following to ignore the entire vscode folder
-# .vscode/
+        
+main() #Calls the main function to begin the interface
+                    
 
-# Ruff stuff:
-.ruff_cache/
-
-# PyPI configuration file
-.pypirc
-
-# Cursor
-#  Cursor is an AI-powered code editor. `.cursorignore` specifies files/directories to
-#  exclude from AI features like autocomplete and code analysis. Recommended for sensitive data
-#  refer to https://docs.cursor.com/context/ignore-files
-.cursorignore
-.cursorindexingignore
-
-# Marimo
-marimo/_static/
-marimo/_lsp/
-__marimo__/
+            
+    
+    
